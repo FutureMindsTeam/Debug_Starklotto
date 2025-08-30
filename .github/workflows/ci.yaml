@@ -1,61 +1,54 @@
-name: Debug_Starklotto CI
+name: StarkLotto Contracts CI
 
 on:
-  push:
-    branches:
-      - main
-      - dev
-    paths:
-      - "**"
-      - ".github/workflows/**"
   pull_request:
     branches:
       - main
       - dev
     paths:
-      - "**"
+      - "packages/snfoundry/contracts/**"
+      - ".github/workflows/**"
+
+  push:
+    branches:
+      - dev
+    paths:
+      - "packages/snfoundry/contracts/**"
       - ".github/workflows/**"
 
 jobs:
-  scaffold-verification:
+  # -------------------------
+  # Snfoundry Contracts CI
+  # -------------------------
+  build-and-test-contracts:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # -----------------------------
-      # Configuración Scarb + Snfoundry
-      # -----------------------------
       - name: Setup Scarb
         uses: software-mansion/setup-scarb@v1
         with:
-          scarb-version: "2.11.4" # última versión conocida compatible
+          tool-versions: ./.tool-versions
+          scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
 
       - name: Setup snfoundry
         uses: foundry-rs/setup-snfoundry@v3
         with:
           tool-versions: ./.tool-versions
 
-      # -----------------------------------------
-      # Evita que Scarb falle por conflictos de versión
-      # -----------------------------------------
-      - name: Skip global scarb fetch/build
-        run: echo "Skipping global scarb fetch/build to avoid version conflicts"
+      - name: Compile contracts
+        run: scarb build
+        working-directory: ./packages/snfoundry/contracts
 
-      # -----------------------------------------
-      # Corre tests de los contratos (packages/snfoundry/contracts)
-      # -----------------------------------------
-      - name: Run contracts integration tests
+      - name: List tests
+        run: snforge test -- --list
+        working-directory: ./packages/snfoundry/contracts
+
+      - name: Run snfoundry tests (verbose + logs)
         run: snforge test -- -v --print-logs
         working-directory: ./packages/snfoundry/contracts
         env:
           RUST_BACKTRACE: 1
           SNFORGE_FORMAT: pretty
-
-      # -----------------------------------------
-      # Placeholder: verifica frontend si aplica
-      # -----------------------------------------
-      - name: Frontend setup check
-        run: |
-          echo "Frontend check placeholder – instala dependencias y corre build si aplica"
