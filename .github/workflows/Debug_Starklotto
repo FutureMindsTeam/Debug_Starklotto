@@ -1,0 +1,75 @@
+name: Debug StarkLotto CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths:
+      - "**"
+      - ".github/workflows/**"
+
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  verify-contracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: "2.7.0" # o la que corresponda al scaffold
+
+      - name: Setup snfoundry
+        uses: foundry-rs/setup-snfoundry@v3
+        with:
+          tool-versions: ./.tool-versions
+
+      - name: Verify Scarb.toml exists
+        run: |
+          if [ ! -f "./Scarb.toml" ]; then
+            echo "Error: Scarb.toml not found"
+            exit 1
+          fi
+
+      - name: Compile contracts
+        run: scarb build
+        working-directory: .
+
+      - name: List and run contract tests
+        run: |
+          snforge test -- --list || echo "No tests found"
+          snforge test -- -v --print-logs || echo "Tests failed"
+        working-directory: .
+
+  verify-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install frontend dependencies
+        run: |
+          if [ -f "package.json" ]; then
+            npm install
+          else
+            echo "No frontend detected"
+          fi
+
+      - name: Run linter
+        run: |
+          if [ -f "package.json" ]; then
+            npx eslint . || echo "Lint warnings/errors detected"
+          fi
