@@ -1,7 +1,6 @@
 use core::serde::Serde;
 use starknet::ContractAddress;
 use starknet::storage::Map;
-
 /// Enum representing the status of a lottery ticket
 #[derive(Drop, Copy, Serde, starknet::Store)]
 #[allow(starknet::store_no_default_variant)]
@@ -337,3 +336,4 @@ mod LottoTicketNFT {
         }
     }
 }
+
