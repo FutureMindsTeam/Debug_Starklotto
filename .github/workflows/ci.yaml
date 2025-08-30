@@ -1,4 +1,4 @@
-name: StarkLotto Contracts CI
+name: Debug_Starklotto Contracts CI
 
 on:
   pull_request:
@@ -24,15 +24,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Scarb
+      - name: Setup Scarb
         uses: software-mansion/setup-scarb@v1
         with:
-          scarb-version: "2.11.4" # Ajusta según la versión que uses en Scarb.toml
+          scarb-version: "2.11.4" # Asegúrate de usar la versión mínima requerida
 
       - name: Setup snfoundry
         uses: foundry-rs/setup-snfoundry@v3
         with:
-          tool-versions: ./.tool-versions # Solo si lo necesitas para snfoundry
+          tool-versions: ./.tool-versions
 
       - name: Compile contracts
         run: scarb build
@@ -43,8 +43,8 @@ jobs:
         working-directory: ./packages/snfoundry/contracts
 
       - name: Run snfoundry tests (verbose + logs)
-        run: snforge test -- -v --print-logs
-        working-directory: ./packages/snfoundry/contracts
         env:
           RUST_BACKTRACE: 1
           SNFORGE_FORMAT: pretty
+        run: snforge test -- -v --print-logs
+        working-directory: ./packages/snfoundry/contracts
