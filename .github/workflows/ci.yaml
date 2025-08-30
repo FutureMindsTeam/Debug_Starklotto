@@ -1,4 +1,4 @@
-name: Debug_Starklotto Contracts CI
+name: StarkLotto Contracts CI
 
 on:
   pull_request:
@@ -21,30 +21,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Scarb
+      # 2. Setup Scarab (compatible con Cairo 2.11.4)
+      - name: Setup Scarab
         uses: software-mansion/setup-scarb@v1
         with:
-          scarb-version: "2.11.4" # Asegúrate de usar la versión mínima requerida
+          scarb-version: "2.11.4"
 
-      - name: Setup snfoundry
+      # 3. Setup Snfoundry (Starknet Foundry)
+      - name: Setup Snfoundry
         uses: foundry-rs/setup-snfoundry@v3
         with:
           tool-versions: ./.tool-versions
 
-      - name: Compile contracts
-        run: scarb build
+      # 4. Install dependencies and build contracts
+      - name: Fetch dependencies and build
+        run: |
+          scarb fetch
+          scarb build
         working-directory: ./packages/snfoundry/contracts
 
+      # 5. List all tests detected
       - name: List tests
         run: snforge test -- --list
         working-directory: ./packages/snfoundry/contracts
 
+      # 6. Run tests in verbose mode and print logs
       - name: Run snfoundry tests (verbose + logs)
+        run: snforge test -- -v --print-logs
+        working-directory: ./packages/snfoundry/contracts
         env:
           RUST_BACKTRACE: 1
           SNFORGE_FORMAT: pretty
-        run: snforge test -- -v --print-logs
-        working-directory: ./packages/snfoundry/contracts
