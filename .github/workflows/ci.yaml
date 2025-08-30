@@ -1,16 +1,15 @@
 name: Debug_Starklotto Contracts CI
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
       - dev
     paths:
       - "packages/snfoundry/contracts/**"
       - ".github/workflows/**"
-
-  push:
+  pull_request:
     branches:
+      - main
       - dev
     paths:
       - "packages/snfoundry/contracts/**"
@@ -27,7 +26,9 @@ jobs:
       - name: Setup Scarb
         uses: software-mansion/setup-scarb@v1
         with:
+          # Ruta a tu archivo .tool-versions en la raíz del repo
           tool-versions: ./.tool-versions
+          # Ruta al lockfile específico del paquete de contratos
           scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
 
       - name: Setup snfoundry
