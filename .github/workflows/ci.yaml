@@ -1,12 +1,17 @@
-name: Snfoundry Contracts CI
+name: Debug_Starklotto Contracts CI
 
 on:
-  push:
-    branches: [dev]
+  pull_request:
+    branches:
+      - main
+      - dev
     paths:
       - "packages/snfoundry/contracts/**"
-  pull_request:
-    branches: [dev]
+      - ".github/workflows/**"
+
+  push:
+    branches:
+      - dev
     paths:
       - "packages/snfoundry/contracts/**"
       - ".github/workflows/**"
@@ -17,22 +22,30 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup ScarB
+      - name: Setup Scarb
         uses: software-mansion/setup-scarb@v1
         with:
-          scarb-version: "2.11.4"
+          tool-versions: ./.tool-versions
+          scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
 
       - name: Setup snfoundry
         uses: foundry-rs/setup-snfoundry@v3
         with:
           tool-versions: ./.tool-versions
 
-      - name: Run snforge tests (verbose + logs)
+      - name: Compile contracts
+        run: scarb build
+        working-directory: ./packages/snfoundry/contracts
+
+      - name: List tests
+        run: snforge test -- --list
+        working-directory: ./packages/snfoundry/contracts
+
+      - name: Run snfoundry tests (verbose + logs)
+        run: snforge test -- -v --print-logs
+        working-directory: ./packages/snfoundry/contracts
         env:
           RUST_BACKTRACE: 1
           SNFORGE_FORMAT: pretty
-          SNFORGE_SCARB_PATH: ./packages/snfoundry/contracts/Scarb.toml
-        run: snforge test -- -v --print-logs
-        working-directory: ./packages/snfoundry/contracts
