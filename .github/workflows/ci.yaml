@@ -1,15 +1,16 @@
-name: Debug_Starklotto Contracts CI
+name: StarkLotto Contracts CI
 
 on:
-  push:
+  pull_request:
     branches:
+      - main
       - dev
     paths:
       - "packages/snfoundry/contracts/**"
       - ".github/workflows/**"
-  pull_request:
+
+  push:
     branches:
-      - main
       - dev
     paths:
       - "packages/snfoundry/contracts/**"
@@ -23,18 +24,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Scarb
+      - name: Install Scarb
         uses: software-mansion/setup-scarb@v1
         with:
-          # Ruta a tu archivo .tool-versions en la raíz del repo
-          tool-versions: ./.tool-versions
-          # Ruta al lockfile específico del paquete de contratos
-          scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
+          scarb-version: "2.11.4" # Ajusta según la versión que uses en Scarb.toml
 
       - name: Setup snfoundry
         uses: foundry-rs/setup-snfoundry@v3
         with:
-          tool-versions: ./.tool-versions
+          tool-versions: ./.tool-versions # Solo si lo necesitas para snfoundry
 
       - name: Compile contracts
         run: scarb build
