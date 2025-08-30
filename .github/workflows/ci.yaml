@@ -1,4 +1,4 @@
-name: StarkLotto Contracts CI
+name: StarkLotto CI
 
 on:
   pull_request:
@@ -6,9 +6,8 @@ on:
       - main
       - dev
     paths:
-      - "packages/snfoundry/contracts/**"
+      - "**"
       - ".github/workflows/**"
-
   push:
     branches:
       - dev
@@ -18,25 +17,57 @@ on:
 
 jobs:
   # -------------------------
-  # Snfoundry Contracts CI
+  # 1. StarkLotto General CI
+  # -------------------------
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # Setup Scarb desde la raíz del repo
+      - name: Setup Scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          tool-versions: ${{ github.workspace }}/.tool-versions
+
+      # Setup snfoundry
+      - name: Setup snfoundry
+        uses: foundry-rs/setup-snfoundry@v3
+        with:
+          tool-versions: ${{ github.workspace }}/.tool-versions
+
+      # Skip build/fetch en proyecto principal para evitar conflictos
+      - name: Skip global scarb fetch due to dependency conflicts
+        run: echo "Skipping scarb fetch and build in main project because of dependency conflicts"
+
+      # Ejecuta tests de la carpeta de contracts
+      - name: Run integration tests for contracts package
+        run: snforge test -- -v --print-logs
+        working-directory: ./packages/snfoundry/contracts
+        env:
+          RUST_BACKTRACE: 1
+          SNFORGE_FORMAT: pretty
+
+  # -------------------------
+  # 2. Snfoundry Contracts CI
   # -------------------------
   build-and-test-contracts:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Scarb
         uses: software-mansion/setup-scarb@v1
         with:
-          tool-versions: ./.tool-versions
+          tool-versions: ${{ github.workspace }}/.tool-versions
           scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
 
       - name: Setup snfoundry
         uses: foundry-rs/setup-snfoundry@v3
         with:
-          tool-versions: ./.tool-versions
+          tool-versions: ${{ github.workspace }}/.tool-versions
 
       - name: Compile contracts
         run: scarb build
