@@ -22,7 +22,7 @@ jobs:
       - name: Setup ScarB
         uses: software-mansion/setup-scarb@v1
         with:
-          scarb-version: "2.9.4"
+          scarb-version: "2.11.4"
 
       - name: Setup snfoundry
         uses: foundry-rs/setup-snfoundry@v3
@@ -33,5 +33,6 @@ jobs:
         env:
           RUST_BACKTRACE: 1
           SNFORGE_FORMAT: pretty
+          SNFORGE_SCARB_PATH: ./packages/snfoundry/contracts/Scarb.toml
         run: snforge test -- -v --print-logs
         working-directory: ./packages/snfoundry/contracts
