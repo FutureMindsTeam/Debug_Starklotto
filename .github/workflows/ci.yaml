@@ -1,6 +1,12 @@
-name: StarkLotto CI
+name: Debug_Starklotto CI
 
 on:
+  push:
+    branches:
+      - dev
+    paths:
+      - "packages/snfoundry/contracts/**"
+      - ".github/workflows/**"
   pull_request:
     branches:
       - main
@@ -8,78 +14,35 @@ on:
     paths:
       - "**"
       - ".github/workflows/**"
-  push:
-    branches:
-      - dev
-    paths:
-      - "packages/snfoundry/contracts/**"
-      - ".github/workflows/**"
 
 jobs:
-  # -------------------------
-  # 1. StarkLotto General CI
-  # -------------------------
   build-and-test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Scarb desde la raíz del repo
+      # --- Setup Scarb con versión fija ---
       - name: Setup Scarb
         uses: software-mansion/setup-scarb@v1
         with:
-          tool-versions: ${{ github.workspace }}/.tool-versions
+          scarb-version: "2.11.4"  # versión mínima requerida por tu proyecto
 
-      # Setup snfoundry
+      # --- Setup snfoundry ---
       - name: Setup snfoundry
         uses: foundry-rs/setup-snfoundry@v3
         with:
           tool-versions: ${{ github.workspace }}/.tool-versions
 
-      # Skip build/fetch en proyecto principal para evitar conflictos
+      # --- Evitar fetch global de ScarB si hay conflictos ---
       - name: Skip global scarb fetch due to dependency conflicts
-        run: echo "Skipping scarb fetch and build in main project because of dependency conflicts"
+        run: echo "Skipping scarb fetch and build in main project because of version conflicts"
 
-      # Ejecuta tests de la carpeta de contracts
+      # --- Ejecutar tests en package de contratos ---
       - name: Run integration tests for contracts package
+        working-directory: ./packages/snfoundry/contracts
         run: snforge test -- -v --print-logs
-        working-directory: ./packages/snfoundry/contracts
-        env:
-          RUST_BACKTRACE: 1
-          SNFORGE_FORMAT: pretty
-
-  # -------------------------
-  # 2. Snfoundry Contracts CI
-  # -------------------------
-  build-and-test-contracts:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Scarb
-        uses: software-mansion/setup-scarb@v1
-        with:
-          tool-versions: ${{ github.workspace }}/.tool-versions
-          scarb-lock: ./packages/snfoundry/contracts/Scarb.lock
-
-      - name: Setup snfoundry
-        uses: foundry-rs/setup-snfoundry@v3
-        with:
-          tool-versions: ${{ github.workspace }}/.tool-versions
-
-      - name: Compile contracts
-        run: scarb build
-        working-directory: ./packages/snfoundry/contracts
-
-      - name: List tests
-        run: snforge test -- --list
-        working-directory: ./packages/snfoundry/contracts
-
-      - name: Run snfoundry tests (verbose + logs)
-        run: snforge test -- -v --print-logs
-        working-directory: ./packages/snfoundry/contracts
         env:
           RUST_BACKTRACE: 1
           SNFORGE_FORMAT: pretty
