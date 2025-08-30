@@ -1,4 +1,4 @@
-name: Snfoundry Contracts CI (Skip ScarB)
+name: Snfoundry Contracts CI
 
 on:
   push:
@@ -28,13 +28,6 @@ jobs:
         uses: foundry-rs/setup-snfoundry@v3
         with:
           tool-versions: ./.tool-versions
-
-      - name: Skip ScarB fetch/build
-        run: echo "Skipping ScarB fetch/build due to version conflicts"
-
-      - name: List snforge tests
-        run: snforge test -- --list
-        working-directory: ./packages/snfoundry/contracts
 
       - name: Run snforge tests (verbose + logs)
         env:
