@@ -7,7 +7,7 @@ on:
       - dev
     paths:
       - "**"
-      - ".github/workflows/**"   # Esto asegura que se ejecute si solo subes el workflow
+      - ".github/workflows/**"   # Ejecuta aunque solo subas el workflow
   pull_request:
     branches:
       - main
@@ -27,16 +27,26 @@ jobs:
       - name: Setup Scarb
         uses: software-mansion/setup-scarb@v1
         with:
-          scarb-version: "2.7.0"
+          scarb-version: "2.9.4"  # Versión mínima requerida por los contratos
 
       - name: Setup snfoundry
         uses: foundry-rs/setup-snfoundry@v3
         with:
           tool-versions: ./.tool-versions
 
-      - name: Run integration tests for contracts package
+      - name: Install dependencies (contracts package)
+        run: |
+          scarb fetch
+          scarb build
+        working-directory: ./packages/snfoundry/contracts
+
+      - name: Run unit & integration tests (contracts package)
         run: snforge test -- -v --print-logs
         working-directory: ./packages/snfoundry/contracts
         env:
           RUST_BACKTRACE: 1
           SNFORGE_FORMAT: pretty
+
+      - name: Verify frontend setup
+        run: |
+          echo "Frontend check placeholder – instala dependencias y corre build si aplica"
