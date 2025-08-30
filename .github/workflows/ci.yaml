@@ -1,48 +1,44 @@
-name: Debug_Starklotto CI
+name: Snfoundry Contracts CI (Skip ScarB)
 
 on:
   push:
-    branches:
-      - dev
+    branches: [dev]
+    paths:
+      - "packages/snfoundry/contracts/**"
+  pull_request:
+    branches: [dev]
     paths:
       - "packages/snfoundry/contracts/**"
       - ".github/workflows/**"
-  pull_request:
-    branches:
-      - main
-      - dev
-    paths:
-      - "**"
-      - ".github/workflows/**"
 
 jobs:
-  build-and-test:
+  build-and-test-contracts:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # --- Setup Scarb con versión fija ---
-      - name: Setup Scarb
+      - name: Setup ScarB
         uses: software-mansion/setup-scarb@v1
         with:
-          scarb-version: "2.11.4"  # versión mínima requerida por tu proyecto
+          scarb-version: "2.9.4"
 
-      # --- Setup snfoundry ---
       - name: Setup snfoundry
         uses: foundry-rs/setup-snfoundry@v3
         with:
-          tool-versions: ${{ github.workspace }}/.tool-versions
+          tool-versions: ./.tool-versions
 
-      # --- Evitar fetch global de ScarB si hay conflictos ---
-      - name: Skip global scarb fetch due to dependency conflicts
-        run: echo "Skipping scarb fetch and build in main project because of version conflicts"
+      - name: Skip ScarB fetch/build
+        run: echo "Skipping ScarB fetch/build due to version conflicts"
 
-      # --- Ejecutar tests en package de contratos ---
-      - name: Run integration tests for contracts package
+      - name: List snforge tests
+        run: snforge test -- --list
         working-directory: ./packages/snfoundry/contracts
-        run: snforge test -- -v --print-logs
+
+      - name: Run snforge tests (verbose + logs)
         env:
           RUST_BACKTRACE: 1
           SNFORGE_FORMAT: pretty
+        run: snforge test -- -v --print-logs
+        working-directory: ./packages/snfoundry/contracts
